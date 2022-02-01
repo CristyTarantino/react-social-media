@@ -1,0 +1,30 @@
+language: node_js
+os: linux
+dist: xenial
+env:
+  global:
+    - CC_TEST_REPORTER_ID=b1567a7ea511a013af2b33cac1869186a39b1c9869acdfe3c3fe790d49b34b7f
+    - COVERALLS_REPO_TOKEN=m7Toz5fQGrZd6hv5KBuI7XsJw4dBXdTFy
+node_js:
+  - "stable"
+cache:
+  directories:
+    - node_modules
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+script:
+  - npm run test
+  - npm run build || true
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+deploy:
+  skip_cleanup: true
+  provider: pages
+  strategy: git
+  token: $GITHUB_TOKEN
+  local_dir: build
+  on:
+    branch: master
